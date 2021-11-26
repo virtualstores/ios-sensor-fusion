@@ -1,34 +1,27 @@
-import CoreMotion
+// SensorManager
+// VSSensorFusion
+//
+// Created by CJ on 2021-11-26
+// Copyright Virtual Stores - 2021
+//
+
 import Foundation
 import VSFoundation
+import CoreMotion
 
 
-public protocol SensorManager {
-    func start()
-    
-    func stop()
-    
-    func addDelegate(delegate: SensorManagerDelegate)
-    func removeDelegate(delegate: SensorManagerDelegate)
-}
-
-public protocol SensorManagerDelegate {
-    var id: String { get }
-    func onNewMotionSensorData(data: MotionSensorData)
-}
-
-public class SensorManagerImpl: SensorManager {
+public class SensorManager: ISensorManager {
 
     private let INTERVAL_100hz = 1.0 / 100.0
     private let GRAVITY = 9.81
         
     private let motion: CMMotionManager
     private let sensorOperation = OperationQueue()
-    private let serialDispatch: DispatchQueue = DispatchQueue(label: "se.tt2.sensorManager")
+    private let serialDispatch = DispatchQueue(label: "se.tt2.sensorManager")
     
-    private var isRunning: Bool = false
+    private var isRunning = false
     
-    private var delegates: [String:SensorManagerDelegate] = [:]
+    private var delegates = [String:ISensorManagerDelegate]()
     
     public init() {
         self.motion = CMMotionManager()
@@ -87,11 +80,11 @@ public class SensorManagerImpl: SensorManager {
         self.isRunning = false
     }
     
-    public func addDelegate(delegate: SensorManagerDelegate) {
+    public func add(delegate: ISensorManagerDelegate) {
         delegates[delegate.id] = delegate
     }
     
-    public func removeDelegate(delegate: SensorManagerDelegate) {
+    public func remove(delegate: ISensorManagerDelegate) {
         delegates.removeValue(forKey: delegate.id)
     }
 }
