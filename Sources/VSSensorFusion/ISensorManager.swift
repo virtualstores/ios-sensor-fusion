@@ -8,12 +8,9 @@
 import Foundation
 import VSFoundation
 
-
 public protocol ISensorManager {
     func start()
-    
     func stop()
-    
     func add(delegate: ISensorManagerDelegate)
     func remove(delegate: ISensorManagerDelegate)
 }
