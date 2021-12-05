@@ -7,6 +7,7 @@
 
 import Foundation
 import VSFoundation
+import Combine
 
 public protocol ISensorManager {
     func start()
@@ -18,4 +19,17 @@ public protocol ISensorManager {
 public protocol ISensorManagerDelegate {
     var id: String { get }
     func onNewMotionSensorData(data: MotionSensorData)
+}
+
+public protocol ISensorManagerModern {
+    var isRunning: Bool { get }
+    var sensorPublisher: CurrentValueSubject<MotionSensorData?, SensorError> { get }
+    
+    func start() throws
+    func stop()
+}
+
+public enum SensorError: Error {
+    case noData
+    case sensorNotAvaliable
 }

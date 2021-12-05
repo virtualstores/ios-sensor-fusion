@@ -7,7 +7,6 @@ let package = Package(
     name: "VSSensorFusion",
     platforms: [
             .iOS(.v13),
-            .macOS(.v11),
             .watchOS(.v6)
     ],
     products: [
