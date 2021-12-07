@@ -15,12 +15,14 @@ let package = Package(
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
-        // .package(url: /* package url */, from: "1.0.0"),
+        .package(url: "https://github.com/virtualstores/ios-foundation.git", from: "0.0.2-1-SNAPSHOT"),
     ],
     targets: [
         .target(
             name: "VSSensorFusion",
-            dependencies: []),
+            dependencies: [
+                .product(name: "VSFoundation", package: "ios-foundation")
+            ]),
         .testTarget(
             name: "VSSensorFusionTests",
             dependencies: ["VSSensorFusion"]),
