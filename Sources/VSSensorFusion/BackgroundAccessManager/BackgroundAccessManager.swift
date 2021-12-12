@@ -10,7 +10,7 @@ import Foundation
 import CoreLocation
 import UIKit
 
-class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
+public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
         
     public var isActive = true
     public var isRunning = false
@@ -50,6 +50,8 @@ class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
     public func activate() {
         isActive = true
         manager.delegate = self
+        requestLocationAccess()
+        
         NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: backgroundQueue, using: self.enteredBackground(_:))
         NotificationCenter.default.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: backgroundQueue, using: self.enteredForeground(_:))
     }
@@ -104,13 +106,13 @@ class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
 
 // MARK: - CLLocationManagerDelegate
 extension BackgroundAccessManager: CLLocationManagerDelegate {
-    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+    public func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         print("Location authorization status -" , manager.authStatus)
     }
     
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) { }
+    public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) { }
     
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+    public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         guard let clError = error as? CLError else {
             print("locationManager: did fail with unknown error", error)
             return
