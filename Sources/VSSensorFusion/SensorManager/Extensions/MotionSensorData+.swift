@@ -20,18 +20,18 @@ extension MotionSensorData {
         let timestampSensor = Int(data.timestamp * 1000)
         let timestampLocal = Int(Date().timeIntervalSince1970 * 1000)
 
-        let accelerationData = [Float(data.userAcceleration.x * gravity),
-                                Float(data.userAcceleration.y * gravity),
-                                Float(data.userAcceleration.z * gravity)]
+        let accelerationData = [data.userAcceleration.x * gravity,
+                                data.userAcceleration.y * gravity,
+                                data.userAcceleration.z * gravity]
 
-        let gravityData = [Float(data.gravity.x * -gravity),
-                           Float(data.gravity.y * -gravity),
-                           Float(data.gravity.z * -gravity)]
+        let gravityData = [data.gravity.x * -gravity,
+                           data.gravity.y * -gravity,
+                           data.gravity.z * -gravity]
 
-        let rotationData = [Float(data.attitude.quaternion.x),
-                            Float(data.attitude.quaternion.y),
-                            Float(data.attitude.quaternion.z),
-                            Float(data.attitude.quaternion.w)]
+        let rotationData = [data.attitude.quaternion.x,
+                            data.attitude.quaternion.y,
+                            data.attitude.quaternion.z,
+                            data.attitude.quaternion.w]
         
         self.init(timestampSensor: timestampSensor,
                   timestampLocal: timestampLocal,
