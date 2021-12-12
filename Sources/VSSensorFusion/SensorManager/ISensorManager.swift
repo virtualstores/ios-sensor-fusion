@@ -1,3 +1,4 @@
+//
 // ISensorManager
 // VSSensorFusion
 //
@@ -10,18 +11,6 @@ import VSFoundation
 import Combine
 
 public protocol ISensorManager {
-    func start()
-    func stop()
-    func add(delegate: ISensorManagerDelegate)
-    func remove(delegate: ISensorManagerDelegate)
-}
-
-public protocol ISensorManagerDelegate {
-    var id: String { get }
-    func onNewMotionSensorData(data: MotionSensorData)
-}
-
-public protocol ISensorManagerModern {
     var isRunning: Bool { get }
     var sensorPublisher: CurrentValueSubject<MotionSensorData?, SensorError> { get }
     
