@@ -6,8 +6,7 @@ import PackageDescription
 let package = Package(
     name: "VSSensorFusion",
     platforms: [
-            .iOS(.v13),
-            .watchOS(.v6)
+            .iOS(.v13)
     ],
     products: [
         .library(
