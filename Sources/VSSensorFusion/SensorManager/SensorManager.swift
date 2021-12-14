@@ -38,16 +38,14 @@ public class SensorManager: ISensorManager {
         }
         
         if self.motion.isDeviceMotionActive {
-            print("Warning: Trying to start SensorManager that is already started")
             return
         }
         
         motion.startDeviceMotionUpdates(to: sensorOperation) { (data, error) in
             
             guard let data = data else {
-                print("Missing sensor data on update \(#function)")
                 if let error = error {
-                    print(error)
+                    throw SensorError.noData
                 }
                 return
             }

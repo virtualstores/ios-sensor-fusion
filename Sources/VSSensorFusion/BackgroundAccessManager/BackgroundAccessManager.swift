@@ -44,7 +44,6 @@ public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
     
     deinit {
         deactivate()
-        print("BackgroundAccessManager Killed")
     }
     
     public func activate() {
@@ -69,11 +68,9 @@ public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
     
     private func start() {
         guard isLocationAccessEnabled else {
-            print("WARN: App Doesnt have access to CoreLocation, please call requestLocationAccess() first")
             return
         }
         guard !isRunning else {
-            print("WARN: LocationManager already running")
             return
         }
         
@@ -94,12 +91,10 @@ public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
     }
     
     private func enteredBackground(_: Notification) {
-        print("App entered background - BackgroundAccessManager started")
         start()
     }
     
     private func enteredForeground(_: Notification) {
-        print("App entered foreground - BackgroundAccessManager paused")
         stop()
     }
 }
@@ -114,7 +109,6 @@ extension BackgroundAccessManager: CLLocationManagerDelegate {
     
     public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         guard let clError = error as? CLError else {
-            print("locationManager: did fail with unknown error", error)
             return
         }
         
@@ -122,7 +116,6 @@ extension BackgroundAccessManager: CLLocationManagerDelegate {
         case CLError.Code.denied:
             fallthrough
         default:
-            print("locationManager: did fail with error", clError)
         }
         
         isRunning = false
