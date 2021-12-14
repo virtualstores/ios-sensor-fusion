@@ -115,9 +115,9 @@ extension BackgroundAccessManager: CLLocationManagerDelegate {
         switch clError.code {
         case CLError.Code.denied:
             fallthrough
-        default:
+        default: break
         }
-        
+
         isRunning = false
     }
 }

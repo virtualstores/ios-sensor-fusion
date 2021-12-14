@@ -44,8 +44,8 @@ public class SensorManager: ISensorManager {
         motion.startDeviceMotionUpdates(to: sensorOperation) { (data, error) in
             
             guard let data = data else {
-                if let error = error {
-                    throw SensorError.noData
+                if error != nil {
+                    self.sensorPublisher.send(completion: .failure(SensorError.noData))
                 }
                 return
             }
