@@ -27,7 +27,6 @@ public class FakeSensorManager: ISensorManager {
 
     public func start() throws {
         if isRunning {
-            print("Warning: Trying to start SensorManager that is already started")
             return
         }
         
