@@ -1,8 +1,9 @@
 //
-//  File.swift
-//  
+//  CLLocationManager.swift
+//  VSSensorFusion
 //
 //  Created by Felix Andersson on 2021-12-12.
+//  Copyright Virtual Stores - 2021
 //
 
 import CoreLocation
