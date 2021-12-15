@@ -49,7 +49,7 @@ public class SensorManager: ISensorManager {
                 }
                 return
             }
-            
+            print(#file, #function, "Data:", data)
             self.sensorPublisher.send(MotionSensorData(data: data))
         }
     }
