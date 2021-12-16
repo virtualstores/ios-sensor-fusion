@@ -8,12 +8,11 @@
 //
 
 import Foundation
-
+import Combine
 
 /// Manager for enabling running in the background.
 /// Current implementation is BackgroundAccessManager class
 public protocol IBackgroundAccessManager {
-    
     /// Is true when LocationServices are actively tracking location
     var isRunning: Bool { get }
     
@@ -24,6 +23,9 @@ public protocol IBackgroundAccessManager {
     /// Returns true if locations authorization is accepted. Will return false if "Not Determined"
     var isLocationAccessEnabled: Bool { get }
     
+    /// Publishes the location updae error.
+    var backgroundAccessPublisher: CurrentValueSubject<Void, Error> { get }
+
     /// Requests location access. This is needed before the manager can be active.
     func requestLocationAccess()
     

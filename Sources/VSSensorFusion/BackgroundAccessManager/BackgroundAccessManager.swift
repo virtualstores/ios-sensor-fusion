@@ -9,12 +9,15 @@
 import Foundation
 import CoreLocation
 import UIKit
+import Combine
 
 public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
         
     public var isActive = true
     public var isRunning = false
     
+    public var backgroundAccessPublisher: CurrentValueSubject<Void, Error> = .init(())
+
     public var isLocationAccessEnabled: Bool {
         switch manager.authStatus {
         case .authorizedAlways, .authorizedWhenInUse:
@@ -109,13 +112,15 @@ extension BackgroundAccessManager: CLLocationManagerDelegate {
     
     public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         guard let clError = error as? CLError else {
+            self.backgroundAccessPublisher.send(completion: .failure(error))
             return
         }
         
         switch clError.code {
         case CLError.Code.denied:
             fallthrough
-        default: break
+        default:
+            self.backgroundAccessPublisher.send(completion: .failure(clError))
         }
 
         isRunning = false
