@@ -4,27 +4,28 @@
 import PackageDescription
 
 let package = Package(
-    name: "VSSensorFusion",
-    platforms: [
-            .iOS(.v13)
-    ],
-    products: [
-        .library(
-            name: "VSSensorFusion",
-            targets: ["VSSensorFusion"]),
-    ],
-    dependencies: [
-        // Dependencies declare other packages that this package depends on.
-        .package(url: "https://github.com/virtualstores/ios-foundation.git", .exact("0.0.2-20-SNAPSHOT")),
-    ],
-    targets: [
-        .target(
-            name: "VSSensorFusion",
-            dependencies: [
-                .product(name: "VSFoundation", package: "ios-foundation")
-            ]),
-        .testTarget(
-            name: "VSSensorFusionTests",
-            dependencies: ["VSSensorFusion"]),
-    ]
+  name: "VSSensorFusion",
+  platforms: [
+    .macOS(.v11),
+    .iOS(.v13)
+  ],
+  products: [
+    .library(
+      name: "VSSensorFusion",
+      targets: ["VSSensorFusion"]),
+  ],
+  dependencies: [
+    // Dependencies declare other packages that this package depends on.
+    .package(url: "https://github.com/virtualstores/ios-foundation.git", .exact("0.0.2-20-SNAPSHOT")),
+  ],
+  targets: [
+    .target(
+      name: "VSSensorFusion",
+      dependencies: [
+        .product(name: "VSFoundation", package: "ios-foundation")
+      ]),
+    .testTarget(
+      name: "VSSensorFusionTests",
+      dependencies: ["VSSensorFusion"]),
+  ]
 )
