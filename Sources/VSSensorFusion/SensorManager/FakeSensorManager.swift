@@ -28,8 +28,10 @@ public class FakeSensorManager: ISensorManager {
             return
         }
 
-      fakeData.forEach {
-        self.sensorPublisher.send($0)
+      fakeData.forEach { data in
+        sensorOperation.schedule {
+          self.sensorPublisher.send(data)
+        }
       }
 
 //        operationsCancellable = sensorOperation.schedule(after: .init(Date()),
