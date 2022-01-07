@@ -5,7 +5,7 @@
 // Created by Karl Söderberg on 2021-12-05
 // Copyright Virtual Stores - 2021
 //
-
+#if os(iOS)
 import Foundation
 import VSFoundation
 import CoreMotion
@@ -57,3 +57,4 @@ public class SensorManager: ISensorManager {
         self.motion.stopDeviceMotionUpdates()
     }
 }
+#endif
