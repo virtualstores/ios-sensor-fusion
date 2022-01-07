@@ -24,8 +24,7 @@ final class FakeSensorManagerTests: XCTestCase {
     ]
     
     func testSetup() throws {
-        let sut = FakeSensorManager(updateInterval: 1, data: fakeSensorData)
-        
+        let sut = FakeSensorManager(data: fakeSensorData)
         XCTAssertFalse(sut.isRunning)
         XCTAssertNil(sut.sensorPublisher.value)
         XCTAssertNoThrow(try sut.start())
@@ -33,7 +32,7 @@ final class FakeSensorManagerTests: XCTestCase {
     }
     
     func testSendingFakeValues() throws {
-        let sut = FakeSensorManager(updateInterval: 1, data: fakeSensorData)
+        let sut = FakeSensorManager(data: fakeSensorData)
         
         let expectation = self.expectation(description: "Awaiting publisher")
         let cancellable = sut.sensorPublisher

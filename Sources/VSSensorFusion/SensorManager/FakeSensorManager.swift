@@ -14,14 +14,12 @@ public class FakeSensorManager: ISensorManager {
     
     public var sensorPublisher: CurrentValueSubject<MotionSensorData?, SensorError>  = .init(nil)
 
-    private let deviceMotionUpdateInterval: TimeInterval
     private let sensorOperation = OperationQueue()
     private var fakeData: IndexingIterator<[MotionSensorData]>
     private var operationsCancellable: Cancellable?
     public var isRunning: Bool = false
     
-    public init(updateInterval: TimeInterval, data: [MotionSensorData]) {
-        deviceMotionUpdateInterval = updateInterval
+    public init(data: [MotionSensorData]) {
         fakeData = data.makeIterator()
     }
 
@@ -29,13 +27,17 @@ public class FakeSensorManager: ISensorManager {
         if isRunning {
             return
         }
-        
-        operationsCancellable = sensorOperation.schedule(after: .init(Date()),
-                                                         interval: .seconds(deviceMotionUpdateInterval),
-                                                         tolerance: .zero,
-                                                         options: nil) {
-            self.sensorPublisher.send(self.fakeData.next())
-        }
+
+      fakeData.forEach {
+        self.sensorPublisher.send($0)
+      }
+
+//        operationsCancellable = sensorOperation.schedule(after: .init(Date()),
+//                                                         interval: .seconds(deviceMotionUpdateInterval),
+//                                                         tolerance: .zero,
+//                                                         options: nil) {
+//            self.sensorPublisher.send(self.fakeData.next())
+//        }
     }
     
     public func stop() {
