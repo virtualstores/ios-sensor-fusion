@@ -5,11 +5,12 @@
 //  Created by Karl Söderberg on 2021-12-10
 // Copyright Virtual Stores - 2021
 //
-
+#if os(iOS)
 import Foundation
+import Combine
 import CoreLocation
 import UIKit
-import Combine
+
 
 public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
         
@@ -102,6 +103,7 @@ public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
     }
 }
 
+
 // MARK: - CLLocationManagerDelegate
 extension BackgroundAccessManager: CLLocationManagerDelegate {
     public func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
@@ -126,3 +128,4 @@ extension BackgroundAccessManager: CLLocationManagerDelegate {
         isRunning = false
     }
 }
+#endif
