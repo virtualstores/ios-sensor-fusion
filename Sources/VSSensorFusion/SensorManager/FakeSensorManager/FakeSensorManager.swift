@@ -10,25 +10,26 @@ import Foundation
 import VSFoundation
 import Combine
 
-public class FakeSensorManager: ISensorManager {
+public class FakeSensorManager: IFakeSensorManager {
 
   public var sensorPublisher: CurrentValueSubject<MotionSensorData?, SensorError>  = .init(nil)
 
   private let sensorOperation = OperationQueue()
-  private var fakeData: IndexingIterator<[MotionSensorData]>
+  private var fakeData: IndexingIterator<[MotionSensorData]>?
   private var operationsCancellable: Cancellable?
   public var isRunning: Bool = false
 
-  public init(data: [MotionSensorData]) {
+  public init() { }
+
+  public func setFakeData(data: [MotionSensorData]) {
     fakeData = data.makeIterator()
   }
-
   public func start() throws {
     if isRunning {
       return
     }
 
-    fakeData.forEach { data in
+    fakeData?.forEach { data in
       sensorOperation.schedule {
         self.sensorPublisher.send(data)
       }
@@ -40,7 +41,7 @@ public class FakeSensorManager: ISensorManager {
                                                      interval: .seconds(deviceMotionUpdateInterval),
                                                      tolerance: .zero,
                                                      options: nil) {
-      self.sensorPublisher.send(self.fakeData.next())
+      self.sensorPublisher.send(self.fakeData?.next())
     }
   }
 
