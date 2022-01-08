@@ -42,7 +42,7 @@ final class FakeSensorManagerTests: XCTestCase {
             expectation.fulfill()
         }
 
-        try sut.start()
+        try sut.start(deviceMotionUpdateInterval: 1)
         waitForExpectations(timeout: 3)
         cancellable.cancel()
     }
