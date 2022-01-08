@@ -17,7 +17,7 @@ public class FakeSensorManager: IFakeSensorManager {
   private let sensorOperation = OperationQueue()
   private var fakeData: IndexingIterator<[MotionSensorData]>?
   private var operationsCancellable: Cancellable?
-  public var isRunning: Bool = false
+  public var isRunning = false
 
   public init() { }
 

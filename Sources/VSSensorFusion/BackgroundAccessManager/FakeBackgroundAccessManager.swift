@@ -9,11 +9,11 @@ import Foundation
 import Combine
 
 public class FakeBackgroundAccessManager: IBackgroundAccessManager {
-  public var isRunning: Bool = false 
+  public var isRunning = false
 
-  public var isActive: Bool = false
+  public var isActive = false
 
-  public var isLocationAccessEnabled: Bool = false
+  public var isLocationAccessEnabled = false
 
   public var backgroundAccessPublisher: CurrentValueSubject<Void, Error> = .init(())
 
