@@ -16,7 +16,7 @@ let package = Package(
   ],
   dependencies: [
     // Dependencies declare other packages that this package depends on.
-    .package(url: "https://github.com/virtualstores/ios-foundation.git", .exact("0.0.6")),
+    .package(url: "https://github.com/virtualstores/ios-foundation.git", .branch("develop"))
   ],
   targets: [
     .target(
