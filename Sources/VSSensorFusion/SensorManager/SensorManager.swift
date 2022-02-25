@@ -17,7 +17,7 @@ public extension TimeInterval {
 
 public class SensorManager: ISensorManager {
     public let sensorPublisher: CurrentValueSubject<MotionSensorData?, SensorError>  = .init(nil)
-    public let altimeterPublisher: CurrentValueSubject<Double, SensorError> = .init(nil)
+    public let altimeterPublisher: CurrentValueSubject<AltitudeSensorData?, SensorError> = .init(nil)
 
     private let motion = CMMotionManager()
     private let sensorOperation = OperationQueue()
@@ -73,7 +73,7 @@ public class SensorManager: ISensorManager {
 
             let timestampSensor = Int(data.timestamp * 1000)
             let timestampLocal = Int(Date().timeIntervalSince1970 * 1000)
-            self.altimeterPublisher.send(AltitudeSensorData(timestampSensor: timestampSensor, timestampLocal: timestampLocal, altitudenData: [data.relativeAltitude]))
+            self.altimeterPublisher.send(AltitudeSensorData(timestampSensor: timestampSensor, timestampLocal: timestampLocal, altitudenData: [Double(truncating: data.relativeAltitude)]))
         }
     }
     

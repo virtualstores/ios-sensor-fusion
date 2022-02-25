@@ -12,7 +12,7 @@ import Combine
 
 public class FakeSensorManager: IFakeSensorManager {
   public let sensorPublisher: CurrentValueSubject<MotionSensorData?, SensorError>  = .init(nil)
-  public let altimeterPublisher: CurrentValueSubject<Double, SensorError> = .init(0.0)
+  public let altimeterPublisher: CurrentValueSubject<AltitudeSensorData?, SensorError> = .init(nil)
 
   private let sensorOperation = OperationQueue()
   private var fakeData: IndexingIterator<[MotionSensorData]>?
