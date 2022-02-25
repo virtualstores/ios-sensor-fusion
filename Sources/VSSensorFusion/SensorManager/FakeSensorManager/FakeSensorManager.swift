@@ -11,8 +11,8 @@ import VSFoundation
 import Combine
 
 public class FakeSensorManager: IFakeSensorManager {
-
-  public var sensorPublisher: CurrentValueSubject<MotionSensorData?, SensorError>  = .init(nil)
+  public let sensorPublisher: CurrentValueSubject<MotionSensorData?, SensorError>  = .init(nil)
+  public let altimeterPublisher: CurrentValueSubject<Double, SensorError> = .init(0.0)
 
   private let sensorOperation = OperationQueue()
   private var fakeData: IndexingIterator<[MotionSensorData]>?
@@ -45,9 +45,17 @@ public class FakeSensorManager: IFakeSensorManager {
     }
   }
 
+  public func startMotion() throws {}
+
+  public func startAltimeter() throws {}
+
   public func stop() {
     self.isRunning = false
     sensorOperation.cancelAllOperations()
     operationsCancellable?.cancel()
   }
+
+  public func stopMotion() {}
+
+  public func stopAltimeter() {}
 }

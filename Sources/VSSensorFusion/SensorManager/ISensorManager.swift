@@ -18,15 +18,25 @@ public protocol ISensorManager {
     
     /// Publishes the latest sensor data. Update interval is determined by implementing class
     var sensorPublisher: CurrentValueSubject<MotionSensorData?, SensorError> { get }
+
+    /// Publishes the latest altimeter data.
+    var altimeterPublisher: CurrentValueSubject<AltitudeSensorData?, SensorError> { get }
     
     /// Starts sensor managers sensor lokup. Will produce results to sensorPublisher.
     func start() throws
+
+    func startMotion() throws
+    func startAltimeter() throws
     
     /// Stops sensor managers sensor.
     func stop()
+
+    func stopMotion()
+    func stopAltimeter()
 }
 
 public enum SensorError: Error {
     case noData
     case sensorNotAvaliable
+    case altimeterError(Error)
 }

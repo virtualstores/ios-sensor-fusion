@@ -16,11 +16,12 @@ public extension TimeInterval {
 }
 
 public class SensorManager: ISensorManager {
-    
-    public var sensorPublisher: CurrentValueSubject<MotionSensorData?, SensorError>  = .init(nil)
+    public let sensorPublisher: CurrentValueSubject<MotionSensorData?, SensorError>  = .init(nil)
+    public let altimeterPublisher: CurrentValueSubject<Double, SensorError> = .init(nil)
 
     private let motion = CMMotionManager()
     private let sensorOperation = OperationQueue()
+    private let altimeter = CMAltimeter()
 
     public var isRunning: Bool { motion.isDeviceMotionActive }
 
@@ -33,28 +34,60 @@ public class SensorManager: ISensorManager {
     }
 
     public func start() throws {
-        guard motion.isDeviceMotionAvailable else {
-            throw SensorError.sensorNotAvaliable
-        }
-        
-        if self.motion.isDeviceMotionActive {
-            return
-        }
-        
-        motion.startDeviceMotionUpdates(to: sensorOperation) { (data, error) in
-            
+        try startMotion()
+        try startAltimeter()
+    }
+
+    public func startMotion() throws {
+      guard motion.isDeviceMotionAvailable else {
+          throw SensorError.sensorNotAvaliable
+      }
+
+      if self.motion.isDeviceMotionActive {
+          return
+      }
+
+      motion.startDeviceMotionUpdates(to: sensorOperation) { (data, error) in
+
+          guard let data = data else {
+              if error != nil {
+                  self.sensorPublisher.send(completion: .failure(SensorError.noData))
+              }
+              return
+          }
+          self.sensorPublisher.send(MotionSensorData(data: data))
+      }
+    }
+
+    public func startAltimeter() throws {
+        guard CMAltimeter.isRelativeAltitudeAvailable() else { throw SensorError.sensorNotAvaliable }
+
+        altimeter.startRelativeAltitudeUpdates(to: .main) { (data, error) in
             guard let data = data else {
-                if error != nil {
-                    self.sensorPublisher.send(completion: .failure(SensorError.noData))
+                if let error = error {
+                    Logger().log(message: "Altimeter error \(error.localizedDescription)")
+                    self.stopAltimeter()
                 }
                 return
             }
-            self.sensorPublisher.send(MotionSensorData(data: data))
+
+            let timestampSensor = Int(data.timestamp * 1000)
+            let timestampLocal = Int(Date().timeIntervalSince1970 * 1000)
+            self.altimeterPublisher.send(AltitudeSensorData(timestampSensor: timestampSensor, timestampLocal: timestampLocal, altitudenData: [data.relativeAltitude]))
         }
     }
     
     public func stop() {
-        self.motion.stopDeviceMotionUpdates()
+        stopMotion()
+        stopAltimeter()
+    }
+
+    public func stopMotion() {
+      self.motion.stopDeviceMotionUpdates()
+    }
+
+    public func stopAltimeter() {
+        self.altimeter.stopRelativeAltitudeUpdates()
     }
 }
 #endif
