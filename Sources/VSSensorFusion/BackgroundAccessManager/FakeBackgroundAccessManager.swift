@@ -7,6 +7,7 @@
 #if os(iOS)
 import Foundation
 import Combine
+import CoreLocation
 
 public class FakeBackgroundAccessManager: IBackgroundAccessManager {
   public var isRunning = false
@@ -16,6 +17,8 @@ public class FakeBackgroundAccessManager: IBackgroundAccessManager {
   public var isLocationAccessEnabled = false
 
   public var backgroundAccessPublisher: CurrentValueSubject<Void, Error> = .init(())
+
+  public var locationHeadingPublisher: CurrentValueSubject<CLHeading, Error> = .init(CLHeading())
 
   public init() {}
 

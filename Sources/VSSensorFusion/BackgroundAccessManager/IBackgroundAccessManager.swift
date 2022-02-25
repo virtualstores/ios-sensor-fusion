@@ -9,6 +9,7 @@
 
 import Foundation
 import Combine
+import CoreLocation
 
 /// Manager for enabling running in the background.
 /// Current implementation is BackgroundAccessManager class
@@ -25,6 +26,9 @@ public protocol IBackgroundAccessManager {
     
     /// Publishes the location updae error.
     var backgroundAccessPublisher: CurrentValueSubject<Void, Error> { get }
+
+    /// Publishes the current heading from CLLocationManager
+    var locationHeadingPublisher: CurrentValueSubject<CLHeading, Error> { get }
 
     /// Requests location access. This is needed before the manager can be active.
     func requestLocationAccess()
