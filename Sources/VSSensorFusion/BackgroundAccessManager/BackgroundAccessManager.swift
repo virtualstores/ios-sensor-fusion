@@ -13,11 +13,12 @@ import UIKit
 
 
 public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
-        
+
     public var isActive = true
     public var isRunning = false
     
     public var backgroundAccessPublisher: CurrentValueSubject<Void, Error> = .init(())
+    public var locationHeadingPublisher: CurrentValueSubject<CLHeading, Error> = .init(CLHeading())
 
     public var isLocationAccessEnabled: Bool {
         switch manager.authStatus {
@@ -54,7 +55,8 @@ public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
         isActive = true
         manager.delegate = self
         requestLocationAccess()
-        
+        manager.startUpdatingHeading()
+
         NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: backgroundQueue, using: self.enteredBackground(_:))
         NotificationCenter.default.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: backgroundQueue, using: self.enteredForeground(_:))
     }
@@ -126,6 +128,10 @@ extension BackgroundAccessManager: CLLocationManagerDelegate {
         }
 
         isRunning = false
+    }
+
+    public func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
+        self.locationHeadingPublisher.send(newHeading)
     }
 }
 #endif
