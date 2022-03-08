@@ -48,7 +48,6 @@ public class SensorManager: ISensorManager {
       }
 
       motion.startDeviceMotionUpdates(to: sensorOperation) { (data, error) in
-
           guard let data = data else {
               if error != nil {
                   self.sensorPublisher.send(completion: .failure(SensorError.noData))
@@ -78,8 +77,10 @@ public class SensorManager: ISensorManager {
     }
     
     public func stop() {
-        stopMotion()
-        stopAltimeter()
+        sensorOperation.underlyingQueue?.async {
+            self.stopMotion()
+            self.stopAltimeter()
+        }
     }
 
     public func stopMotion() {
