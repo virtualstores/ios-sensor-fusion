@@ -40,3 +40,13 @@ public enum SensorError: Error {
     case sensorNotAvaliable
     case altimeterError(Error)
 }
+
+extension SensorError: LocalizedError {
+    public var errorDescription: String? {
+        switch self {
+        case .noData: return NSLocalizedString("No data from sensors", comment: "Try to start sensors")
+        case .sensorNotAvaliable: return NSLocalizedString("No sensors are available", comment: "")
+        case .altimeterError(let error): return NSLocalizedString("Altimeter Error", comment: error.localizedDescription)
+        }
+    }
+}
