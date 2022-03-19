@@ -69,7 +69,7 @@ public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
     }
     
     public func requestLocationAccess() {
-        manager.requestAlwaysAuthorization()
+        manager.requestWhenInUseAuthorization()
     }
     
     private func start() {
