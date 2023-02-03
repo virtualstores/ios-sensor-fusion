@@ -33,5 +33,7 @@ public class FakeBackgroundAccessManager: IBackgroundAccessManager {
   public func deactivate() {
     isActive = false
   }
+
+  public func vpsRunning(isRunning: Bool) {}
 }
 #endif

@@ -11,23 +11,19 @@ import Combine
 import CoreLocation
 import UIKit
 
-
 public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
-
-    public var isActive = true
-    public var isRunning = false
+    public private(set) var isActive = true
+    public private(set) var isRunning = false
+    public private(set) var isVPSRunning = false
     
     public var backgroundAccessPublisher: CurrentValueSubject<Void, Error> = .init(())
     public var locationHeadingPublisher: CurrentValueSubject<CLHeading, Error> = .init(CLHeading())
 
     public var isLocationAccessEnabled: Bool {
         switch manager.authStatus {
-        case .authorizedAlways, .authorizedWhenInUse:
-            return true
-        case .denied, .notDetermined, .restricted:
-            return false
-        @unknown default:
-            return false
+        case .authorizedAlways, .authorizedWhenInUse: return true
+        case .denied, .notDetermined, .restricted: return false
+        @unknown default: return false
         }
     }
     
@@ -36,7 +32,7 @@ public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
     
     public override init() {
         super.init()
-        
+
         if #available(iOS 14.0, *) {
             manager.desiredAccuracy = kCLLocationAccuracyReduced
         }
@@ -44,7 +40,7 @@ public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
         manager.pausesLocationUpdatesAutomatically = false
         manager.distanceFilter = kCLDistanceFilterNone
         
-        self.activate()
+        activate()
     }
     
     deinit {
@@ -67,23 +63,20 @@ public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
         stop()
         manager.delegate = nil
     }
+
+    public func vpsRunning(isRunning: Bool) {
+        isVPSRunning = isRunning
+    }
     
     public func requestLocationAccess() {
         manager.requestWhenInUseAuthorization()
     }
     
     private func start() {
-        guard isLocationAccessEnabled else {
-            return
-        }
-        guard !isRunning else {
-            return
-        }
+        guard isLocationAccessEnabled, !isRunning, isVPSRunning else { return }
         
         DispatchQueue.global().async {
-            guard CLLocationManager.locationServicesEnabled() else {
-                return
-            }
+            guard CLLocationManager.locationServicesEnabled() else { return }
             self.isRunning = true
             self.manager.startUpdatingLocation()
             self.manager.showsBackgroundLocationIndicator = true
@@ -91,6 +84,7 @@ public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
     }
     
     private func stop() {
+        guard isRunning else { return }
         manager.stopUpdatingLocation()
         isRunning = false
         manager.showsBackgroundLocationIndicator = false
@@ -112,7 +106,11 @@ extension BackgroundAccessManager: CLLocationManagerDelegate {
         print("Location authorization status -" , manager.authStatus)
     }
     
-    public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) { }
+    public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+      locations.forEach {
+        $0
+      }
+    }
     
     public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         guard let clError = error as? CLError else {

@@ -11,14 +11,13 @@ import CoreMotion
 import VSFoundation
 
 extension MotionSensorData {
-    
     private static var gravity: Double { 9.81 }
 
     init(data: CMDeviceMotion) {
         let gravity = Self.gravity
         
         let timestampSensor = Int(data.timestamp * 1000)
-        let timestampLocal = Int(Date().timeIntervalSince1970 * 1000)
+        let timestampLocal = Date().currentTimeMillis
 
         let accelerationData = [data.userAcceleration.x * gravity,
                                 data.userAcceleration.y * gravity,

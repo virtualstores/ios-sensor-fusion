@@ -39,4 +39,6 @@ public protocol IBackgroundAccessManager {
     /// Deactivates the listener to check if device is going to background.
     /// Also stops all background LocationServices and stops running in the background.
     func deactivate()
+
+    func vpsRunning(isRunning: Bool)
 }

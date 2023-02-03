@@ -39,13 +39,8 @@ public class SensorManager: ISensorManager {
     }
 
     public func startMotion() throws {
-      guard motion.isDeviceMotionAvailable else {
-          throw SensorError.sensorNotAvaliable
-      }
-
-      if self.motion.isDeviceMotionActive {
-          return
-      }
+      guard motion.isDeviceMotionAvailable else { throw SensorError.sensorNotAvaliable }
+      guard !motion.isDeviceMotionActive else { return }
 
       motion.startDeviceMotionUpdates(to: sensorOperation) { (data, error) in
           guard let data = data else {
@@ -71,7 +66,7 @@ public class SensorManager: ISensorManager {
             }
 
             let timestampSensor = Int(data.timestamp * 1000)
-            let timestampLocal = Int(Date().timeIntervalSince1970 * 1000)
+            let timestampLocal = Date().currentTimeMillis
             self.altimeterPublisher.send(AltitudeSensorData(timestampSensor: timestampSensor, timestampLocal: timestampLocal, altitudenData: [Double(truncating: data.relativeAltitude)]))
         }
     }
