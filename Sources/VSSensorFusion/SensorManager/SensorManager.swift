@@ -13,11 +13,15 @@ import Combine
 
 public extension TimeInterval {
     static var interval100Hz = 0.01
+    static var interval200Hz = 0.005
 }
 
 public class SensorManager: ISensorManager {
     public let sensorPublisher: CurrentValueSubject<MotionSensorData?, SensorError>  = .init(nil)
     public let altimeterPublisher: CurrentValueSubject<AltitudeSensorData?, SensorError> = .init(nil)
+
+    private let accelerometerPublisher: CurrentValueSubject<CMAccelerometerData?, SensorError> = .init(nil)
+    private let magnetometerPublisher: CurrentValueSubject<CMMagnetometerData?, SensorError> = .init(nil)
 
     private let motion = CMMotionManager()
     private let sensorOperation = OperationQueue()
@@ -39,18 +43,42 @@ public class SensorManager: ISensorManager {
     }
 
     public func startMotion() throws {
-      guard motion.isDeviceMotionAvailable else { throw SensorError.sensorNotAvaliable }
-      guard !motion.isDeviceMotionActive else { return }
+        guard motion.isDeviceMotionAvailable else { throw SensorError.sensorNotAvaliable }
+        guard !motion.isDeviceMotionActive else { return }
 
-      motion.startDeviceMotionUpdates(to: sensorOperation) { (data, error) in
-          guard let data = data else {
-              if error != nil {
-                  self.sensorPublisher.send(completion: .failure(SensorError.noData))
-              }
-              return
-          }
-          self.sensorPublisher.send(MotionSensorData(data: data))
-      }
+        motion.startDeviceMotionUpdates(to: sensorOperation) { (data, error) in
+            guard let data = data else {
+                if error != nil {
+                    self.sensorPublisher.send(completion: .failure(.noData))
+                }
+                return
+            }
+            self.sensorPublisher.send(MotionSensorData(data: data, accelerometerData: self.accelerometerPublisher.value, magnetometerData: self.magnetometerPublisher.value))
+        }
+
+        if motion.isAccelerometerAvailable {
+            motion.startAccelerometerUpdates(to: sensorOperation) { (data, error) in
+                guard let data = data else {
+                    if error != nil {
+                        self.sensorPublisher.send(completion: .failure(.noData))
+                    }
+                    return
+                }
+                self.accelerometerPublisher.send(data)
+            }
+        }
+
+        if motion.isMagnetometerAvailable {
+            motion.startMagnetometerUpdates(to: sensorOperation) { (data, error) in
+                guard let data = data else {
+                    if error != nil {
+                        self.sensorPublisher.send(completion: .failure(.noData))
+                    }
+                    return
+                }
+                self.magnetometerPublisher.send(data)
+            }
+        }
     }
 
     public func startAltimeter() throws {
@@ -79,11 +107,11 @@ public class SensorManager: ISensorManager {
     }
 
     public func stopMotion() {
-      self.motion.stopDeviceMotionUpdates()
+        motion.stopDeviceMotionUpdates()
     }
 
     public func stopAltimeter() {
-        self.altimeter.stopRelativeAltitudeUpdates()
+        altimeter.stopRelativeAltitudeUpdates()
     }
 }
 #endif
