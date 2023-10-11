@@ -18,7 +18,7 @@ public class FakeBackgroundAccessManager: IBackgroundAccessManager {
 
   public var backgroundAccessPublisher: CurrentValueSubject<Void, Error> = .init(())
 
-  public var locationHeadingPublisher: CurrentValueSubject<CLHeading, Error> = .init(CLHeading())
+  public var locationHeadingPublisher: CurrentValueSubject<CLHeading?, Error> = .init(nil)
 
   public init() {}
 

@@ -17,7 +17,7 @@ public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
     public private(set) var isVPSRunning = false
     
     public var backgroundAccessPublisher: CurrentValueSubject<Void, Error> = .init(())
-    public var locationHeadingPublisher: CurrentValueSubject<CLHeading, Error> = .init(CLHeading())
+    public var locationHeadingPublisher: CurrentValueSubject<CLHeading?, Error> = .init(nil)
 
     public var isLocationAccessEnabled: Bool {
         switch manager.authStatus {
