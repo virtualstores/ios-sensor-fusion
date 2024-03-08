@@ -18,6 +18,7 @@ public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
     
     public var backgroundAccessPublisher: CurrentValueSubject<Void, Error> = .init(())
     public var locationHeadingPublisher: CurrentValueSubject<CLHeading?, Error> = .init(nil)
+    public static var locationHeadingPublisher: CurrentValueSubject<CLHeading?, Error> = .init(nil)
 
     public var isLocationAccessEnabled: Bool {
         switch manager.authStatus {
@@ -130,6 +131,7 @@ extension BackgroundAccessManager: CLLocationManagerDelegate {
 
     public func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
         self.locationHeadingPublisher.send(newHeading)
+        BackgroundAccessManager.locationHeadingPublisher.send(newHeading)
     }
 }
 #endif

@@ -18,6 +18,7 @@ public extension TimeInterval {
 
 public class SensorManager: ISensorManager {
     public let sensorPublisher: CurrentValueSubject<MotionSensorData?, SensorError>  = .init(nil)
+    public static let sensorPublisher: CurrentValueSubject<MotionSensorData?, SensorError>  = .init(nil)
     public let altimeterPublisher: CurrentValueSubject<AltitudeSensorData?, SensorError> = .init(nil)
 
     private let accelerometerPublisher: CurrentValueSubject<CMAccelerometerData?, SensorError> = .init(nil)
@@ -53,7 +54,9 @@ public class SensorManager: ISensorManager {
                 }
                 return
             }
-            self.sensorPublisher.send(MotionSensorData(data: data, accelerometerData: self.accelerometerPublisher.value, magnetometerData: self.magnetometerPublisher.value))
+            let motionData = MotionSensorData(data: data, accelerometerData: self.accelerometerPublisher.value, magnetometerData: self.magnetometerPublisher.value)
+            self.sensorPublisher.send(motionData)
+            SensorManager.sensorPublisher.send(motionData)
         }
 
         if motion.isAccelerometerAvailable {
@@ -93,9 +96,15 @@ public class SensorManager: ISensorManager {
                 return
             }
 
-            let timestampSensor = Int(data.timestamp * 1000)
-            let timestampLocal = Date().currentTimeMillis
-            self.altimeterPublisher.send(AltitudeSensorData(timestampSensor: timestampSensor, timestampLocal: timestampLocal, altitudenData: [Double(truncating: data.relativeAltitude)]))
+
+            self.altimeterPublisher.send(AltitudeSensorData(
+              timestampSensor: Int(data.timestamp * 1000),
+              timestampLocal: Date().currentTimeMillis,
+              timestampLocalNano: .nanoTime,
+              altitudeData: [data.relativeAltitude.doubleValue],
+              barometerData: [data.pressure.doubleValue],
+              cmAltitude: data
+            ))
         }
     }
     
