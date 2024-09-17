@@ -17,6 +17,7 @@ public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
     public private(set) var isVPSRunning = false
     
     public var backgroundAccessPublisher: CurrentValueSubject<Void, Error> = .init(())
+    public static var locationPublisher: CurrentValueSubject<CLLocation?, Error> = .init(nil)
     public var locationHeadingPublisher: CurrentValueSubject<CLHeading?, Error> = .init(nil)
     public static var locationHeadingPublisher: CurrentValueSubject<CLHeading?, Error> = .init(nil)
 
@@ -35,12 +36,12 @@ public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
         super.init()
 
         if #available(iOS 14.0, *) {
-            manager.desiredAccuracy = kCLLocationAccuracyReduced
+            manager.desiredAccuracy = kCLLocationAccuracyBestForNavigation//kCLLocationAccuracyReduced
         }
         manager.allowsBackgroundLocationUpdates = true
         manager.pausesLocationUpdatesAutomatically = false
         manager.distanceFilter = kCLDistanceFilterNone
-        
+
         activate()
     }
     
@@ -54,8 +55,8 @@ public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
         requestLocationAccess()
         manager.startUpdatingHeading()
 
-        NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: backgroundQueue, using: self.enteredBackground(_:))
-        NotificationCenter.default.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: backgroundQueue, using: self.enteredForeground(_:))
+        //NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: backgroundQueue, using: self.enteredBackground(_:))
+        //NotificationCenter.default.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: backgroundQueue, using: self.enteredForeground(_:))
     }
     
     public func deactivate() {
@@ -73,9 +74,9 @@ public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
         manager.requestWhenInUseAuthorization()
     }
     
-    private func start() {
-        guard isLocationAccessEnabled, !isRunning, isVPSRunning else { return }
-        
+    public func start() {
+        guard isLocationAccessEnabled, !isRunning/*, isVPSRunning*/ else { return }
+
         DispatchQueue.global().async {
             guard CLLocationManager.locationServicesEnabled() else { return }
             self.isRunning = true
@@ -84,7 +85,7 @@ public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
         }
     }
     
-    private func stop() {
+    public func stop() {
         guard isRunning else { return }
         manager.stopUpdatingLocation()
         isRunning = false
@@ -108,9 +109,7 @@ extension BackgroundAccessManager: CLLocationManagerDelegate {
     }
     
     public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-      locations.forEach {
-        $0
-      }
+        locations.forEach { BackgroundAccessManager.locationPublisher.send($0) }
     }
     
     public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {

@@ -35,5 +35,9 @@ public class FakeBackgroundAccessManager: IBackgroundAccessManager {
   }
 
   public func vpsRunning(isRunning: Bool) {}
+
+  public func start() {}
+
+  public func stop() {}
 }
 #endif

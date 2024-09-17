@@ -41,4 +41,8 @@ public protocol IBackgroundAccessManager {
     func deactivate()
 
     func vpsRunning(isRunning: Bool)
+
+    func start()
+
+    func stop()
 }

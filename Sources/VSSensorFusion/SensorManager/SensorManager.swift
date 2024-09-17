@@ -47,7 +47,7 @@ public class SensorManager: ISensorManager {
         guard motion.isDeviceMotionAvailable else { throw SensorError.sensorNotAvaliable }
         guard !motion.isDeviceMotionActive else { return }
 
-        motion.startDeviceMotionUpdates(to: sensorOperation) { (data, error) in
+        motion.startDeviceMotionUpdates(using: .xArbitraryCorrectedZVertical, to: sensorOperation) { (data, error) in
             guard let data = data else {
                 if error != nil {
                     self.sensorPublisher.send(completion: .failure(.noData))
@@ -60,6 +60,7 @@ public class SensorManager: ISensorManager {
         }
 
         if motion.isAccelerometerAvailable {
+            motion.accelerometerUpdateInterval = .interval100Hz
             motion.startAccelerometerUpdates(to: sensorOperation) { (data, error) in
                 guard let data = data else {
                     if error != nil {
@@ -71,17 +72,18 @@ public class SensorManager: ISensorManager {
             }
         }
 
-        if motion.isMagnetometerAvailable {
-            motion.startMagnetometerUpdates(to: sensorOperation) { (data, error) in
-                guard let data = data else {
-                    if error != nil {
-                        self.sensorPublisher.send(completion: .failure(.noData))
-                    }
-                    return
-                }
-                self.magnetometerPublisher.send(data)
-            }
-        }
+        //if motion.isMagnetometerAvailable {
+        //    //motion.magnetometerUpdateInterval = .interval100Hz
+        //    motion.startMagnetometerUpdates(to: sensorOperation) { (data, error) in
+        //        guard let data = data else {
+        //            if error != nil {
+        //                self.sensorPublisher.send(completion: .failure(.noData))
+        //            }
+        //            return
+        //        }
+        //        self.magnetometerPublisher.send(data)
+        //    }
+        //}
     }
 
     public func startAltimeter() throws {
@@ -95,7 +97,6 @@ public class SensorManager: ISensorManager {
                 }
                 return
             }
-
 
             self.altimeterPublisher.send(AltitudeSensorData(
               timestampSensor: Int(data.timestamp * 1000),
