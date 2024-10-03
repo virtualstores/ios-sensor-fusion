@@ -55,8 +55,8 @@ public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
         requestLocationAccess()
         manager.startUpdatingHeading()
 
-        //NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: backgroundQueue, using: self.enteredBackground(_:))
-        //NotificationCenter.default.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: backgroundQueue, using: self.enteredForeground(_:))
+        NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: backgroundQueue, using: self.enteredBackground(_:))
+        NotificationCenter.default.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: backgroundQueue, using: self.enteredForeground(_:))
     }
     
     public func deactivate() {
@@ -75,7 +75,7 @@ public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
     }
     
     public func start() {
-        guard isLocationAccessEnabled, !isRunning/*, isVPSRunning*/ else { return }
+        guard isLocationAccessEnabled, !isRunning, isVPSRunning else { return }
 
         DispatchQueue.global().async {
             guard CLLocationManager.locationServicesEnabled() else { return }
