@@ -19,12 +19,14 @@ public extension TimeInterval {
 public class SensorManager: ISensorManager {
     public let sensorPublisher: CurrentValueSubject<MotionSensorData?, SensorError>  = .init(nil)
     public static let sensorPublisher: CurrentValueSubject<MotionSensorData?, SensorError>  = .init(nil)
+    public static let sensorPublisher2: CurrentValueSubject<MotionSensorData?, SensorError>  = .init(nil)
     public let altimeterPublisher: CurrentValueSubject<AltitudeSensorData?, SensorError> = .init(nil)
 
     private let accelerometerPublisher: CurrentValueSubject<CMAccelerometerData?, SensorError> = .init(nil)
     private let magnetometerPublisher: CurrentValueSubject<CMMagnetometerData?, SensorError> = .init(nil)
 
     private let motion = CMMotionManager()
+    private let motion2 = CMMotionManager()
     private let sensorOperation = OperationQueue()
     private let altimeter = CMAltimeter()
 
@@ -32,6 +34,7 @@ public class SensorManager: ISensorManager {
 
     public init(updateInterval: TimeInterval) {
         self.motion.deviceMotionUpdateInterval = updateInterval
+        self.motion2.deviceMotionUpdateInterval = updateInterval
     }
     
     public convenience init() {
@@ -47,28 +50,39 @@ public class SensorManager: ISensorManager {
         guard motion.isDeviceMotionAvailable else { throw SensorError.sensorNotAvaliable }
         guard !motion.isDeviceMotionActive else { return }
 
-        motion.startDeviceMotionUpdates(using: .xArbitraryCorrectedZVertical, to: sensorOperation) { (data, error) in
-            guard let data = data else {
+        motion.startDeviceMotionUpdates(using: .xArbitraryCorrectedZVertical, to: sensorOperation) { [weak self] (data, error) in
+            guard let self = self, let data = data else {
                 if error != nil {
-                    self.sensorPublisher.send(completion: .failure(.noData))
+                    self?.sensorPublisher.send(completion: .failure(.noData))
                 }
                 return
             }
-            let motionData = MotionSensorData(data: data, accelerometerData: self.accelerometerPublisher.value, magnetometerData: self.magnetometerPublisher.value)
-            self.sensorPublisher.send(motionData)
+            let motionData = MotionSensorData(data: data, accelerometerData: accelerometerPublisher.value, magnetometerData: magnetometerPublisher.value)
+            sensorPublisher.send(motionData)
             SensorManager.sensorPublisher.send(motionData)
+        }
+
+        motion2.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: sensorOperation) { [weak self] (data, error) in
+          guard let self = self, let data = data else {
+            if error != nil {
+              self?.sensorPublisher.send(completion: .failure(.noData))
+            }
+            return
+          }
+          let motionData = MotionSensorData(data: data, accelerometerData: accelerometerPublisher.value, magnetometerData: magnetometerPublisher.value)
+          SensorManager.sensorPublisher2.send(motionData)
         }
 
         if motion.isAccelerometerAvailable {
             motion.accelerometerUpdateInterval = .interval100Hz
-            motion.startAccelerometerUpdates(to: sensorOperation) { (data, error) in
-                guard let data = data else {
+            motion.startAccelerometerUpdates(to: sensorOperation) { [weak self] (data, error) in
+                guard let self = self, let data = data else {
                     if error != nil {
-                        self.sensorPublisher.send(completion: .failure(.noData))
+                        self?.sensorPublisher.send(completion: .failure(.noData))
                     }
                     return
                 }
-                self.accelerometerPublisher.send(data)
+                accelerometerPublisher.send(data)
             }
         }
 
@@ -118,6 +132,7 @@ public class SensorManager: ISensorManager {
 
     public func stopMotion() {
         motion.stopDeviceMotionUpdates()
+        motion2.stopDeviceMotionUpdates()
     }
 
     public func stopAltimeter() {
