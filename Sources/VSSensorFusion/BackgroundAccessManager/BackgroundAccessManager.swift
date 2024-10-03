@@ -17,7 +17,6 @@ public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
     public private(set) var isVPSRunning = false
     
     public var backgroundAccessPublisher: CurrentValueSubject<Void, Error> = .init(())
-    public static var locationPublisher: CurrentValueSubject<CLLocation?, Error> = .init(nil)
     public var locationHeadingPublisher: CurrentValueSubject<CLHeading?, Error> = .init(nil)
     public static var locationHeadingPublisher: CurrentValueSubject<CLHeading?, Error> = .init(nil)
 
@@ -36,7 +35,7 @@ public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
         super.init()
 
         if #available(iOS 14.0, *) {
-            manager.desiredAccuracy = kCLLocationAccuracyBestForNavigation//kCLLocationAccuracyReduced
+            manager.desiredAccuracy = kCLLocationAccuracyReduced
         }
         manager.allowsBackgroundLocationUpdates = true
         manager.pausesLocationUpdatesAutomatically = false
@@ -108,9 +107,7 @@ extension BackgroundAccessManager: CLLocationManagerDelegate {
         print("Location authorization status -" , manager.authStatus)
     }
     
-    public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        locations.forEach { BackgroundAccessManager.locationPublisher.send($0) }
-    }
+    public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {}
     
     public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         guard let clError = error as? CLError else {
