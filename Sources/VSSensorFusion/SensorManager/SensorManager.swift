@@ -50,7 +50,7 @@ public class SensorManager: ISensorManager {
         guard motion.isDeviceMotionAvailable else { throw SensorError.sensorNotAvaliable }
         guard !motion.isDeviceMotionActive else { return }
 
-        motion.startDeviceMotionUpdates(using: .xArbitraryCorrectedZVertical, to: sensorOperation) { [weak self] (data, error) in
+        motion.startDeviceMotionUpdates(to: sensorOperation) { [weak self] (data, error) in
             guard let self = self, let data = data else {
                 if error != nil {
                     self?.sensorPublisher.send(completion: .failure(.noData))
@@ -62,16 +62,16 @@ public class SensorManager: ISensorManager {
             SensorManager.sensorPublisher.send(motionData)
         }
 
-        motion2.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: sensorOperation) { [weak self] (data, error) in
-          guard let self = self, let data = data else {
-            if error != nil {
-              self?.sensorPublisher.send(completion: .failure(.noData))
-            }
-            return
-          }
-          let motionData = MotionSensorData(data: data, accelerometerData: accelerometerPublisher.value, magnetometerData: magnetometerPublisher.value)
-          SensorManager.sensorPublisher2.send(motionData)
-        }
+        //motion2.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: sensorOperation) { [weak self] (data, error) in
+        //  guard let self = self, let data = data else {
+        //    if error != nil {
+        //      self?.sensorPublisher.send(completion: .failure(.noData))
+        //    }
+        //    return
+        //  }
+        //  let motionData = MotionSensorData(data: data, accelerometerData: accelerometerPublisher.value, magnetometerData: magnetometerPublisher.value)
+        //  SensorManager.sensorPublisher2.send(motionData)
+        //}
 
         if motion.isAccelerometerAvailable {
             motion.accelerometerUpdateInterval = .interval100Hz
@@ -86,18 +86,18 @@ public class SensorManager: ISensorManager {
             }
         }
 
-        //if motion.isMagnetometerAvailable {
-        //    //motion.magnetometerUpdateInterval = .interval100Hz
-        //    motion.startMagnetometerUpdates(to: sensorOperation) { (data, error) in
-        //        guard let data = data else {
-        //            if error != nil {
-        //                self.sensorPublisher.send(completion: .failure(.noData))
-        //            }
-        //            return
-        //        }
-        //        self.magnetometerPublisher.send(data)
-        //    }
-        //}
+        if motion.isMagnetometerAvailable {
+            motion.magnetometerUpdateInterval = .interval100Hz
+            motion.startMagnetometerUpdates(to: sensorOperation) { (data, error) in
+                guard let data = data else {
+                    if error != nil {
+                        self.sensorPublisher.send(completion: .failure(.noData))
+                    }
+                    return
+                }
+                self.magnetometerPublisher.send(data)
+            }
+        }
     }
 
     public func startAltimeter() throws {
