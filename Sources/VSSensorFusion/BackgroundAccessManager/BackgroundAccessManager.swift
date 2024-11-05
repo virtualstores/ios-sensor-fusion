@@ -67,6 +67,9 @@ public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
 
     public func vpsRunning(isRunning: Bool) {
         isVPSRunning = isRunning
+        if !isRunning {
+          stop()
+        }
     }
     
     public func requestLocationAccess() {
