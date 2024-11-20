@@ -86,10 +86,11 @@ public class SensorManager: ISensorManager {
         }
     }
 
+    var isAltimeterActive = false
     public func startAltimeter() throws {
         guard CMAltimeter.isRelativeAltitudeAvailable() else { throw SensorError.sensorNotAvaliable }
-
-        altimeter.startRelativeAltitudeUpdates(to: .main) { (data, error) in
+        isAltimeterActive = true
+        altimeter.startRelativeAltitudeUpdates(to: sensorOperation) { (data, error) in
             guard let data = data else {
                 if let error = error {
                     Logger().log(message: "Altimeter error \(error.localizedDescription)")
@@ -121,6 +122,8 @@ public class SensorManager: ISensorManager {
     }
 
     public func stopAltimeter() {
+        guard isAltimeterActive else { return }
+        isAltimeterActive = false
         altimeter.stopRelativeAltitudeUpdates()
     }
 }
