@@ -17,14 +17,17 @@ public extension TimeInterval {
 }
 
 public class SensorManager: ISensorManager {
-    public let sensorPublisher: CurrentValueSubject<MotionSensorData?, SensorError>  = .init(nil)
-    public static let sensorPublisher: CurrentValueSubject<MotionSensorData?, SensorError>  = .init(nil)
+    public let sensorPublisher: CurrentValueSubject<MotionSensorData?, SensorError> = .init(nil)
+    public static let sensorPublisher: CurrentValueSubject<MotionSensorData?, SensorError> = .init(nil)
+    public static let sensorPublisher2: CurrentValueSubject<MotionSensorData?, SensorError> = .init(nil)
     public let altimeterPublisher: CurrentValueSubject<AltitudeSensorData?, SensorError> = .init(nil)
 
+    private let tag = "SensorManager"
     private let accelerometerPublisher: CurrentValueSubject<CMAccelerometerData?, SensorError> = .init(nil)
     private let magnetometerPublisher: CurrentValueSubject<CMMagnetometerData?, SensorError> = .init(nil)
 
     private let motion = CMMotionManager()
+    private let motion2 = CMMotionManager()
     private let sensorOperation = OperationQueue()
     private let altimeter = CMAltimeter()
 
@@ -32,10 +35,21 @@ public class SensorManager: ISensorManager {
 
     public init(updateInterval: TimeInterval) {
         self.motion.deviceMotionUpdateInterval = updateInterval
+        self.motion2.deviceMotionUpdateInterval = updateInterval
     }
     
     public convenience init() {
         self.init(updateInterval: .interval100Hz)
+    }
+
+    deinit {
+      Logger(verbosity: .info).log(tag: tag, message: "deinit")
+      dispose()
+    }
+
+    public func dispose() {
+      Logger(verbosity: .info).log(tag: tag, message: "dispose")
+      stop()
     }
 
     public func start() throws {
@@ -47,28 +61,42 @@ public class SensorManager: ISensorManager {
         guard motion.isDeviceMotionAvailable else { throw SensorError.sensorNotAvaliable }
         guard !motion.isDeviceMotionActive else { return }
 
+        let sensorPublisher = sensorPublisher
+        let accelerometerPublisher = accelerometerPublisher
+        let magnetometerPublisher = magnetometerPublisher
         motion.startDeviceMotionUpdates(to: sensorOperation) { (data, error) in
             guard let data = data else {
                 if error != nil {
-                    self.sensorPublisher.send(completion: .failure(.noData))
+                    sensorPublisher.send(completion: .failure(.noData))
                 }
                 return
             }
-            let motionData = MotionSensorData(data: data, accelerometerData: self.accelerometerPublisher.value, magnetometerData: self.magnetometerPublisher.value)
-            self.sensorPublisher.send(motionData)
+            let motionData = MotionSensorData(data: data, accelerometerData: accelerometerPublisher.value, magnetometerData: magnetometerPublisher.value)
+            sensorPublisher.send(motionData)
             SensorManager.sensorPublisher.send(motionData)
         }
+
+        //motion2.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: sensorOperation) { [weak self] (data, error) in
+        //  guard let self = self, let data = data else {
+        //    if error != nil {
+        //      self?.sensorPublisher.send(completion: .failure(.noData))
+        //    }
+        //    return
+        //  }
+        //  let motionData = MotionSensorData(data: data, accelerometerData: accelerometerPublisher.value, magnetometerData: magnetometerPublisher.value)
+        //  SensorManager.sensorPublisher2.send(motionData)
+        //}
 
         if motion.isAccelerometerAvailable {
             motion.accelerometerUpdateInterval = .interval100Hz
             motion.startAccelerometerUpdates(to: sensorOperation) { (data, error) in
                 guard let data = data else {
                     if error != nil {
-                        self.sensorPublisher.send(completion: .failure(.noData))
+                        accelerometerPublisher.send(completion: .failure(.noData))
                     }
                     return
                 }
-                self.accelerometerPublisher.send(data)
+                accelerometerPublisher.send(data)
             }
         }
 
@@ -77,11 +105,11 @@ public class SensorManager: ISensorManager {
             motion.startMagnetometerUpdates(to: sensorOperation) { (data, error) in
                 guard let data = data else {
                     if error != nil {
-                        self.sensorPublisher.send(completion: .failure(.noData))
+                        magnetometerPublisher.send(completion: .failure(.noData))
                     }
                     return
                 }
-                self.magnetometerPublisher.send(data)
+                magnetometerPublisher.send(data)
             }
         }
     }
@@ -89,8 +117,9 @@ public class SensorManager: ISensorManager {
     var isAltimeterActive = false
     public func startAltimeter() throws {
         guard CMAltimeter.isRelativeAltitudeAvailable() else { throw SensorError.sensorNotAvaliable }
-        isAltimeterActive = true
-        altimeter.startRelativeAltitudeUpdates(to: sensorOperation) { (data, error) in
+
+        let altimeterPublisher = altimeterPublisher
+        altimeter.startRelativeAltitudeUpdates(to: .main) { (data, error) in
             guard let data = data else {
                 if let error = error {
                     Logger().log(message: "Altimeter error \(error.localizedDescription)")
@@ -99,7 +128,7 @@ public class SensorManager: ISensorManager {
                 return
             }
 
-            self.altimeterPublisher.send(AltitudeSensorData(
+            altimeterPublisher.send(AltitudeSensorData(
               timestampSensor: Int(data.timestamp * 1000),
               timestampLocal: Date().currentTimeMillis,
               timestampLocalNano: .nanoTime,
@@ -111,14 +140,17 @@ public class SensorManager: ISensorManager {
     }
     
     public func stop() {
-        sensorOperation.underlyingQueue?.async {
-            self.stopMotion()
-            self.stopAltimeter()
+        sensorOperation.underlyingQueue?.async { [weak self] in
+            self?.stopMotion()
+            self?.motion.stopAccelerometerUpdates()
+            self?.motion.stopMagnetometerUpdates()
+            self?.stopAltimeter()
         }
     }
 
     public func stopMotion() {
         motion.stopDeviceMotionUpdates()
+        motion2.stopDeviceMotionUpdates()
     }
 
     public func stopAltimeter() {

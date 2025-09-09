@@ -10,10 +10,11 @@
 import Foundation
 import Combine
 import CoreLocation
+import VSFoundation
 
 /// Manager for enabling running in the background.
 /// Current implementation is BackgroundAccessManager class
-public protocol IBackgroundAccessManager {
+public protocol IBackgroundAccessManager: Disposable {
     /// Is true when LocationServices are actively tracking location
     var isRunning: Bool { get }
     

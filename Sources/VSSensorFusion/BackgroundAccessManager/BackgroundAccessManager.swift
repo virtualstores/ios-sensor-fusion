@@ -10,6 +10,7 @@ import Foundation
 import Combine
 import CoreLocation
 import UIKit
+import VSFoundation
 
 public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
     public private(set) var isActive = true
@@ -17,52 +18,72 @@ public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
     public private(set) var isVPSRunning = false
     
     public var backgroundAccessPublisher: CurrentValueSubject<Void, Error> = .init(())
+    public static var locationPublisher: CurrentValueSubject<CLLocation?, Error> = .init(nil)
     public var locationHeadingPublisher: CurrentValueSubject<CLHeading?, Error> = .init(nil)
     public static var locationHeadingPublisher: CurrentValueSubject<CLHeading?, Error> = .init(nil)
 
     public var isLocationAccessEnabled: Bool {
-        switch manager.authStatus {
+        switch manager?.authStatus {
         case .authorizedAlways, .authorizedWhenInUse: return true
-        case .denied, .notDetermined, .restricted: return false
+        case .denied, .notDetermined, .restricted, .none: return false
         @unknown default: return false
         }
     }
-    
-    private let manager = CLLocationManager()
-    private let backgroundQueue = OperationQueue()
-    
+
+    private let tag = "BackgroundAccessManager"
+    private var manager: CLLocationManager?
+
     public override init() {
         super.init()
+        manager = CLLocationManager()
 
         if #available(iOS 14.0, *) {
-            manager.desiredAccuracy = kCLLocationAccuracyReduced
+            manager?.desiredAccuracy = kCLLocationAccuracyBestForNavigation//kCLLocationAccuracyReduced
         }
-        manager.allowsBackgroundLocationUpdates = true
-        manager.pausesLocationUpdatesAutomatically = false
-        manager.distanceFilter = kCLDistanceFilterNone
+        manager?.allowsBackgroundLocationUpdates = true
+        manager?.pausesLocationUpdatesAutomatically = false
+        manager?.distanceFilter = kCLDistanceFilterNone
 
         activate()
     }
-    
+
     deinit {
-        deactivate()
+      Logger(verbosity: .info).log(tag: tag, message: "deinit")
+      dispose()
     }
-    
+
+    public func dispose() {
+      Logger(verbosity: .info).log(tag: tag, message: "dispose")
+      deactivate()
+      manager?.stopUpdatingHeading()
+      manager?.stopUpdatingLocation()
+      manager = nil
+    }
+
     public func activate() {
         isActive = true
-        manager.delegate = self
+        manager?.delegate = self
         requestLocationAccess()
-        manager.startUpdatingHeading()
+        manager?.startUpdatingHeading()
 
-        NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: backgroundQueue, using: self.enteredBackground(_:))
-        NotificationCenter.default.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: backgroundQueue, using: self.enteredForeground(_:))
+        // TODO: Solve this
+        addObservers() // Should not be added for for outdoors
     }
-    
+
+    var observersAdded = false
+    func addObservers() {
+      observersAdded = true
+      NotificationCenter.default.addObserver(self, selector: #selector(enteredBackground(_:)), name: UIApplication.didEnterBackgroundNotification, object: nil)
+      NotificationCenter.default.addObserver(self, selector: #selector(enteredForeground(_:)), name: UIApplication.willEnterForegroundNotification, object: nil)
+    }
+
     public func deactivate() {
         isActive = false
         NotificationCenter.default.removeObserver(self)
+
+        observersAdded = false
         stop()
-        manager.delegate = nil
+        manager?.delegate = nil
     }
 
     public func vpsRunning(isRunning: Bool) {
@@ -73,32 +94,36 @@ public class BackgroundAccessManager: NSObject, IBackgroundAccessManager {
     }
     
     public func requestLocationAccess() {
-        manager.requestWhenInUseAuthorization()
+        manager?.requestWhenInUseAuthorization()
     }
     
     public func start() {
         guard isLocationAccessEnabled, !isRunning, isVPSRunning else { return }
+        #warning("WIP!")
+        // TODO: Possible solution to combine Indoor and Outdoors Sensor fusion, remember to remove isVPSRunning above
+        //if observersAdded, !isVPSRunning { return }
 
-        DispatchQueue.global().async {
+        let manager = manager
+        DispatchQueue.global().async { [weak self] in
             guard CLLocationManager.locationServicesEnabled() else { return }
-            self.isRunning = true
-            self.manager.startUpdatingLocation()
-            self.manager.showsBackgroundLocationIndicator = true
+            self?.isRunning = true
+            manager?.startUpdatingLocation()
+            manager?.showsBackgroundLocationIndicator = true
         }
     }
     
     public func stop() {
         guard isRunning else { return }
-        manager.stopUpdatingLocation()
+        manager?.stopUpdatingLocation()
         isRunning = false
-        manager.showsBackgroundLocationIndicator = false
+        manager?.showsBackgroundLocationIndicator = false
     }
     
-    private func enteredBackground(_: Notification) {
+    @objc private func enteredBackground(_: Notification) {
         start()
     }
     
-    private func enteredForeground(_: Notification) {
+  @objc private func enteredForeground(_: Notification) {
         stop()
     }
 }
