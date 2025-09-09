@@ -10,17 +10,19 @@ import Combine
 import CoreLocation
 
 public class FakeBackgroundAccessManager: IBackgroundAccessManager {
+  public var backgroundAccessPublisher: CurrentValueSubject<Void, any Error> = .init(())
+
+  public var locationHeadingPublisher: CurrentValueSubject<CLHeading?, any Error> = .init(nil)
+  
   public var isRunning = false
 
   public var isActive = false
 
   public var isLocationAccessEnabled = false
 
-  public var backgroundAccessPublisher: CurrentValueSubject<Void, Error> = .init(())
-
-  public var locationHeadingPublisher: CurrentValueSubject<CLHeading?, Error> = .init(nil)
-
   public init() {}
+
+  public func dispose() {}
 
   public func requestLocationAccess() {
     // Do nothing

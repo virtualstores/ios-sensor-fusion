@@ -11,7 +11,7 @@ import VSFoundation
 import Combine
 
 /// Manager for MotionSensor data. Will track device motions and publish them to sensorPublisher.
-public protocol ISensorManager {
+public protocol ISensorManager: Disposable {
     
     /// Is SensorManager running or not. Determined by start()  and stop()
     var isRunning: Bool { get }

@@ -21,6 +21,10 @@ public class FakeSensorManager: IFakeSensorManager {
 
   public init() { }
 
+  public func dispose() {
+    
+  }
+
   public func setFakeData(data: [MotionSensorData]) {
     fakeData = data.makeIterator()
   }
